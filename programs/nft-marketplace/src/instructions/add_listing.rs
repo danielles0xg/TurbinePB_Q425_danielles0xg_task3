@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use mpl_core::instructions::TransferV1CpiBuilder;
 use crate::{Listing, Market};
 
 #[derive(Accounts)]
@@ -35,7 +36,12 @@ pub struct AddListing<'info> {
 
     /// The NFT asset being listed
     /// CHECK: Validated as mpl-core asset from the collection
+    #[account(mut)]
     pub asset: UncheckedAccount<'info>,
+
+    /// MPL Core program for NFT transfer
+    /// CHECK: mpl-core program
+    pub mpl_core_program: UncheckedAccount<'info>,
 
     pub system_program: Program<'info, System>,
 }
@@ -66,8 +72,17 @@ pub fn process_add_listing(
     listing.created_at = clock.unix_timestamp;
     listing.bump = ctx.bumps.listing;
 
+    // Transfer NFT from seller to listing PDA (escrow)
+    TransferV1CpiBuilder::new(&ctx.accounts.mpl_core_program.to_account_info())
+        .asset(&ctx.accounts.asset.to_account_info())
+        .collection(Some(&ctx.accounts.collection.to_account_info()))
+        .payer(&ctx.accounts.seller.to_account_info())
+        .authority(Some(&ctx.accounts.seller.to_account_info()))
+        .new_owner(&ctx.accounts.listing.to_account_info())
+        .invoke()?;
+
     msg!(
-        "Listing created: {} for asset: {} at price: {} lamports",
+        "Listing created: {} for asset: {} at price: {} lamports (NFT now in escrow)",
         ctx.accounts.listing.key(),
         ctx.accounts.asset.key(),
         price

@@ -15,15 +15,13 @@ pub mod nft_marketplace {
     pub fn init_market(
         ctx: Context<InitMarket>,
         fee_recipient: Pubkey,
-        minting_fee_bps: u64,
-        maker_fee_bps: u64,
-        taker_fee_bps: u64 
+        taker_fee_bps: u64
         ) -> Result<()> {
+            require!(taker_fee_bps <= 10000, ErrorCode::FeeTooHigh);
+
             let market = &mut ctx.accounts.market;
             market.admin = ctx.accounts.admin.key();
             market.fee_recipient = fee_recipient.key();
-            market.minting_fee_bps = minting_fee_bps;
-            market.maker_fee_bps = maker_fee_bps;
             market.taker_fee_bps = taker_fee_bps;
             market.bump = ctx.bumps.market;
             Ok(())
@@ -33,18 +31,12 @@ pub mod nft_marketplace {
     pub fn update_market(
         ctx: Context<UpdateMarket>,
         fee_recipient: Pubkey,
-        minting_fee_bps: u64,
-        maker_fee_bps: u64,
         taker_fee_bps: u64
     ) -> Result<()> {
-        require!(minting_fee_bps <= 10000, ErrorCode::FeeTooHigh);
-        require!(maker_fee_bps <= 10000, ErrorCode::FeeTooHigh);
-        require!(taker_fee_bps <= 10000, ErrorCode::FeeTooHigh);
+        require!(taker_fee_bps <= 10000, ErrorCode::FeeTooHigh); // basis points n/10_000 = percentage
 
         let market = &mut ctx.accounts.market;
         market.fee_recipient = fee_recipient;
-        market.minting_fee_bps = minting_fee_bps;
-        market.maker_fee_bps = maker_fee_bps;
         market.taker_fee_bps = taker_fee_bps;
 
         Ok(())
@@ -60,16 +52,15 @@ pub mod nft_marketplace {
         instructions::add_listing::process_add_listing(ctx, price)
     }
 
-    // Not yet implemented
+    // Remove a listing and return NFT to seller
+    pub fn remove_listing(ctx: Context<RemoveListing>) -> Result<()> {
+        instructions::remove_listing::process_remove_listing(ctx)
+    }
 
-    // pub fn remove_listing(ctx: Context<RemoveListing>) -> Result<()> {
-    //     Ok(())
-    // }
-
-    // // match offer by buyer
-    // pub fn match_listing(ctx: Context<MatchListing>) -> Result<()> {
-    //     Ok(())
-    // }
+    // Manual order matching
+    pub fn match_listing(ctx: Context<MatchListing>) -> Result<()> {
+        instructions::match_listing::process_match_listing(ctx)
+    }
 }
 
 // ***************************************************
@@ -82,9 +73,7 @@ pub mod nft_marketplace {
 pub struct Market {
     pub admin: Pubkey,
     pub fee_recipient: Pubkey,
-    pub minting_fee_bps: u64, // basis points
-    pub maker_fee_bps: u64,
-    pub taker_fee_bps: u64,
+    pub taker_fee_bps: u64, // basis points (buyer pays this fee to market)
     pub bump: u8
 }
 
@@ -94,7 +83,7 @@ pub struct Listing {
     pub seller: Pubkey,              // The person who listed the NFT
     pub collection: Pubkey,          // The collection the NFT belongs to
     pub asset: Pubkey,               // The NFT asset ID (mpl-core asset)
-    pub price: u64,                  // Price in lamports
+    pub price: u64,                  // Price in lamports 1e9
     pub is_active: bool,             // Whether the listing is still active
     pub created_at: i64,             // Unix timestamp when listed
     pub bump: u8,                    // PDA bump

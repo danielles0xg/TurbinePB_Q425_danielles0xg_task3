@@ -11,5 +11,8 @@ pub mod create_collection;
 pub use add_listing::*;
 pub mod add_listing;
 
-// pub use remove_listing::*;
-// pub mod remove_listing;
+pub use match_listing::*;
+pub mod match_listing;
+
+pub use remove_listing::*;
+pub mod remove_listing;

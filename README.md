@@ -1,6 +1,6 @@
-# NFT Marketplace
+# Sol Marketplace
 
-A digital assets market on Solana where people can buy and sell NFTs with manual order marching.
+A digital assets market on Solana where people can mint, list and buy nfts with manual order marching. Market uses Metaplex "mpl-core contract" to create and issue assets.
 
 ## Features
 
@@ -31,6 +31,8 @@ anchor build
 
 ## Test
 
+- Unit test is written in Rust with LiteSVM sdks
+
 ```bash
 cargo test -- --show-output
 ```
@@ -40,6 +42,10 @@ cargo test -- --show-output
 ```bash
 anchor deploy
 ```
+
+## TODO
+
+ - add event indexing to get all assets on browser views
 
 ## Known issues
 
@@ -53,3 +59,4 @@ anchor deploy
    let mpl_core_bytes = include_bytes!("mpl_core.so");
    svm.add_program(mpl_core_id, mpl_core_bytes).unwrap();
    ```
+
