@@ -8,4 +8,7 @@ pub enum ErrorCode {
     #[msg("Basis points < 10_000")]
     FeeTooHigh,
 
+    #[msg("Invalid fee recipient")]
+    InvalidFeeRecipient,
+
 }

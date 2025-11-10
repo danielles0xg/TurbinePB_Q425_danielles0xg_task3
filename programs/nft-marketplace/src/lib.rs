@@ -1,4 +1,7 @@
 use anchor_lang::prelude::*;
+use instructions::*;
+mod instructions;
+
 
 mod error;
 use error::ErrorCode;
@@ -47,15 +50,17 @@ pub mod nft_marketplace {
         Ok(())
     }
 
-    // mint nft
-    // pub fn create_collection(ctx: Context<CreateCollection>) -> Result<()> {
-    //     Ok(())
-    // }
+    // Create an NFT collection
+    pub fn create_collection(ctx: Context<CreateCollection>, name: String, uri: String) -> Result<()> {
+        instructions::create_collection::process_create_collection(ctx, name, uri)
+    }
 
-    // // make offer by seller
-    // pub fn add_listing(ctx: Context<ListItem>) -> Result<()> {
-    //     Ok(())
-    // }
+    // List an NFT for sale
+    pub fn add_listing(ctx: Context<AddListing>, price: u64) -> Result<()> {
+        instructions::add_listing::process_add_listing(ctx, price)
+    }
+
+    // Not yet implemented
 
     // pub fn remove_listing(ctx: Context<RemoveListing>) -> Result<()> {
     //     Ok(())
@@ -81,6 +86,18 @@ pub struct Market {
     pub maker_fee_bps: u64,
     pub taker_fee_bps: u64,
     pub bump: u8
+}
+
+#[account]
+#[derive(InitSpace)]
+pub struct Listing {
+    pub seller: Pubkey,              // The person who listed the NFT
+    pub collection: Pubkey,          // The collection the NFT belongs to
+    pub asset: Pubkey,               // The NFT asset ID (mpl-core asset)
+    pub price: u64,                  // Price in lamports
+    pub is_active: bool,             // Whether the listing is still active
+    pub created_at: i64,             // Unix timestamp when listed
+    pub bump: u8,                    // PDA bump
 }
 
 
