@@ -1,8 +1,14 @@
 # Sol Marketplace
 
-A digital assets market on Solana where people can mint, list and buy nfts with manual order marching. Market uses Metaplex "mpl-core contract" to create and issue assets.
+A digital assets market on Solana where people can mint, list, and buy nfts with manual order marching. Market uses Metaplex "mpl-core contract" to create and issue assets.
 
-## Features
+## Problems of manual selling
+- Non-autonomous
+- Trust-based (not cryptography-based)
+- Long negotiations
+- No fair market prices
+
+## This Market Features (solutions)
 
 - Non-custodial: sellers keep their NFTs until someone buys them
 - Manual order matching: buyers choose which NFT to purchase
